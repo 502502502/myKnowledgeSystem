@@ -4,31 +4,21 @@ nowcoder-community
 
 #### 2、服务划分
 
+```shell
 vue-admin
-
 vue-web
 
-
-
 nowcoder-picture
-
 nowcoder-sms
-
 nowcoder-search
-
 nowcoder-monitor
 
-
-
 nowcoder-api
-
 nowcoder-commons
-
 nowcoder-base
-
 nowcoder-xo
-
 nowcoder-utils
+```
 
 
 
@@ -223,6 +213,151 @@ docker update mysql --restart=always
 ```shell
 #下载镜像
 docker update mysql --restart=always
-ｖａａａａａａａａａａａｘｓｃｄｓｖｂｄｃｄｃｄｓｖｄｖｄｄｄｑｑｄｓｊｖｈｊ
+#创建挂载的目录和文件
+mkdir -p /mydata/redis
+cd /mydata/redis
+mkdir data
+vi myredis.conf
+protected-mode no
+port 6379
+tcp-backlog 511
+requirepass 000415
+timeout 0
+tcp-keepalive 300
+daemonize no
+supervised no
+pidfile /var/run/redis_6379.pid
+loglevel notice
+logfile ""
+databases 30
+always-show-logo yes
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+dbfilename dump.rdb
+dir ./
+replica-serve-stale-data yes
+replica-read-only yes
+repl-diskless-sync no
+repl-disable-tcp-nodelay no
+replica-priority 100
+lazyfree-lazy-eviction no
+lazyfree-lazy-expire no
+lazyfree-lazy-server-del no
+replica-lazy-flush no
+appendonly yes
+appendfilename "appendonly.aof"
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+aof-load-truncated yes
+aof-use-rdb-preamble yes
+lua-time-limit 5000
+slowlog-max-len 128
+notify-keyspace-events ""
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-size -2
+list-compress-depth 0
+set-max-intset-entries 512
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+hll-sparse-max-bytes 3000
+stream-node-max-bytes 4096
+stream-node-max-entries 100
+activerehashing yes
+hz 10
+dynamic-hz yes
+aof-rewrite-incremental-fsync yes
+rdb-save-incremental-fsync yes
+#启动
+docker run --restart=always \
+--log-opt max-size=100m \
+--log-opt max-file=2 \
+-p 6379:6379 \
+--name redis \
+-v /mydata/redis/myredis.conf:/etc/redis/redis.conf \
+-v /mydata/redis/data:/data \
+-d redis:7.0.5 \
+redis-server /etc/redis/redis.conf \
+--appendonly yes  \
+--requirepass root
 ```
 
+
+
+**安装elasticsearch**
+
+```shell
+#修改系统内存
+sysctl -w vm.max_map_count=262144
+#下载镜像
+docker pull elasticsearch:7.6.2
+#创建挂载文件，赋予执行权限
+mkdir /mydata/es/data
+mkdir /mydata/es/plugins
+chmod 777 /mydata/es/data
+chmod 777 /mydata/es/plugins
+#启动镜像
+docker run -d \
+--restart=always \
+--name elasticsearch \
+-v /mydata/es/data:/usr/share/elasticsearch/data \
+-v /mydata/es/plugins:/usr/share/elasticsearch/plugins \
+--privileged \
+-e ES_JAVA_OPTS="-Xms512m -Xmx512m" \
+-e "discovery.type=single-node" \
+-p 9200:9200 -p 9300:9300 \
+elasticsearch:7.6.2
+#传输ik分析器到/mydata/plugins, 并解压到plugins/ik
+unzip -d /mydata/es/plugins/ik elasticsearch-analysis-ik-7.6.2.zip
+docker cp ik elasticsearch:/usr/share/elasticsearch/plugins
+#重启
+docker restart elasticsearch
+```
+
+
+
+**安装kafka**
+
+```shell
+#下载zookeeper镜像
+docker pull wurstmeister/zookeeper
+#启动zookeeper
+docker run -d \
+--name zookeeper \
+--restart=always \
+-p 2181:2181 \
+-e TZ="Asia/Shanghai" \
+wurstmeister/zookeeper:latest
+#下载kafka镜像
+docker pull wurstmeister/kafka
+#启动kafka
+docker run -d \
+--name kafka \
+--restart=always \
+-p 9092:9092 \
+-e KAFKA_BROKER_ID=0 \
+-e KAFKA_ZOOKEEPER_CONNECT=192.168.188.100:2181 \
+-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.188.100:9092 \
+-e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 \
+-e TZ="Asia/Shanghai" \
+wurstmeister/kafka:latest
+#下载kafka-mannager镜像
+docker pull sheepkiller/kafka-manager
+#启动mannager
+docker run -d \
+--restart=always \
+--name kfk-manager \
+-p 9000:9000 \
+-e ZK_HOSTS=192.168.188.100:2181 \
+sheepkiller/kafka-manager:latest
+#访问ip:9000
+```
+
+
+
+5、
