@@ -650,7 +650,7 @@ XML不但能够长期作为一种通用的标准，而且很容易向其他格�
 
 
 
-# 作业四、XSL
+# 四
 
 **作业思路：**
 
@@ -1187,4 +1187,484 @@ XML不但能够长期作为一种通用的标准，而且很容易向其他格�
 </xsl:stylesheet>
 
 ```
+
+
+
+**运行结果**
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210193218531.png" alt="image-20221210193218531" style="zoom:80%;" />
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210193318177.png" alt="image-20221210193318177" style="zoom:67%;" />
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210193412905.png" alt="image-20221210193412905" style="zoom:67%;" />
+
+
+
+# 五、
+
+DTD定义数据后，xml编写数据，xsl用表格展示成绩，html用下拉框展示姓名，学院，使用JavaScript动态根据xml生成下拉框的选项，使用xsl将选中的学生成绩进行展示。当下拉框选中发生变化后，使用JavaScript更新学院和成绩表单。
+
+**dtd**
+
+```xml-dtd
+        <!--DTD定义-->
+
+<!--        根元素，包含若干学生-->
+        <!ELEMENT students (student)*>
+<!--        学生元素，包含姓名，平均成绩，专业和课程成绩-->
+        <!ELEMENT student (name,avgscore,dept,course*)>
+<!--        课程成绩包含课程名称，课程成绩，考试日期-->
+        <!ELEMENT course (title,score,date)>
+
+        <!ELEMENT name (#PCDATA)>
+        <!ATTLIST name rowspan CDATA  "1">
+        <!ELEMENT avgscore (#PCDATA)>
+        <!ATTLIST avgscore rowspan CDATA  "1">
+        <!ELEMENT dept (#PCDATA)>
+        <!ELEMENT title (#PCDATA)>
+        <!ATTLIST title rowspan CDATA  "1">
+
+        <!ELEMENT score (#PCDATA)>
+        <!ATTLIST score rowspan CDATA  "1">
+        <!ELEMENT date (#PCDATA)>
+        <!ATTLIST date rowspan CDATA  "1">
+
+```
+
+
+
+**xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 外部引入DTD -->
+<!DOCTYPE students SYSTEM "students_exam_results.dtd">
+<!--引用XSL显示数据-->
+<?xml-stylesheet type="text/xsl" href="students_exam_results.xsl"?>
+
+<!--XML描述-->
+<students>
+    <student>
+        <name rowspan="3">张三</name>
+        <avgscore rowspan="3"></avgscore>
+        <dept>计算机</dept>
+        <course>
+            <title>编译方法</title>
+            <score>79</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>C程序设计</title>
+            <score>85</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>数据结构</title>
+            <score>93</score>
+            <date>2022/11/19</date>
+        </course>
+    </student>
+    <student>
+        <name rowspan="3">李四</name>
+        <avgscore rowspan="3"></avgscore>
+        <dept>数学</dept>
+        <course>
+            <title>计算复杂性</title>
+            <score>72</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>偏微分方程</title>
+            <score>86</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>计算方法</title>
+            <score>95</score>
+            <date>2022/11/19</date>
+        </course>
+    </student>
+    <student>
+        <name rowspan="4">王五</name>
+        <avgscore rowspan="4"></avgscore>
+        <dept>化学</dept>
+        <course>
+            <title>分子轨道理论</title>
+            <score>79</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>有机化学</title>
+            <score>80</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>分子生物学</title>
+            <score>88</score>
+            <date>2022/11/19</date>
+        </course>
+        <course>
+            <title>无机化学</title>
+            <score>98</score>
+            <date>2022/11/19</date>
+        </course>
+    </student>
+</students>
+```
+
+
+
+**xsl**
+
+```html
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method='html' version='1.0' encoding='utf-8' indent='yes'/>
+    <xsl:template match="student">
+        
+        <table border="1">
+            <!-- 列名-->
+            <tr>
+                <th>课程名称</th>
+                <th>考试日期</th>
+                <th>成绩</th>
+            </tr>
+            <!--每个学生循环显示课程-->
+            <xsl:for-each select="course">
+                <!--课程按照成绩升序-->
+                <xsl:sort select="score"/>
+                <tr>
+                    <!-- 课程名称-->
+                    <td>
+                        <xsl:value-of select="title"/>
+                    </td>
+                    <!--考试日期-->
+                    <td>
+                        <xsl:value-of select="date"/>
+                    </td>
+                    <!--课程成绩-->
+                    <td>
+                        <xsl:value-of select="score"/>
+                    </td>
+                </tr>
+            </xsl:for-each>
+        </table>
+    </xsl:template>
+</xsl:stylesheet>
+
+```
+
+
+
+**html**
+
+```html
+<body onload="init()">
+    <!-- 表名-->
+    <h3 width="100px">学生成绩单</h3>
+    <span>姓名：</span>
+    <!-- 姓名下拉框，当选中的姓名发生变化时，出发update函数进行重新渲染 -->
+    <select onchange="update()" id="name"></select>
+    <span>学院：</span>
+    <span id="dept"></span>
+    <!-- 成绩表单 -->
+    <div id="content"></div>
+```
+
+
+
+**javascript**
+
+```javascript
+<script type="text/javascript">
+        var xmlDoc;
+        var xslDoc;
+        var nodes;
+        var maxLen = 0;
+        var index = 0;
+        // 初始化表单数据，加载xml和xsl文件，选择第一个studdent结点进行展示
+        function init() {
+            xmlDoc = loadXMLDoc("students_exam_results.xml");
+            xslDoc = loadXMLDoc("students_exam_results.xsl");
+            nodes = xmlDoc.getElementsByTagName('student');
+            maxLen = nodes.length - 1;
+            display();
+        }
+        //展示下拉框和第一个结点数据
+        function display() {
+            var sel = document.getElementById("name");
+            // 下拉框选项
+            for (i = 0; i <= maxLen; i++) {
+                var opt = document.createElement("option");
+                opt.innerHTML = nodes[i].childNodes[0].childNodes[0].nodeValue;
+                sel.appendChild(opt);
+            }
+            // 第一个student数据
+            if (maxLen >= 0) {
+                document.getElementById("dept").innerHTML = nodes[index].childNodes[2].childNodes[0].nodeValue;
+                var node = nodes[index];
+                var cont = document.getElementById("content");
+                // 使用xsl进行展示，将xsl生成的html插入到html
+                cont.innerHTML = node.transformNode(xslDoc);
+            }
+        }
+        // 根据下拉框选中的名字，改变学院，以及成绩
+        function update() {
+            // 获取选中
+            var index = document.getElementById("name").selectedIndex;
+            // 更改学院
+            document.getElementById("dept").innerHTML = nodes[index].childNodes[2].childNodes[0].nodeValue;
+            var node = nodes[index];
+            var cont = document.getElementById("content");
+            // 更改成绩
+            cont.innerHTML = node.transformNode(xslDoc);
+        }
+        // 通用的加载xml文件模板
+        function loadXMLDoc(dname) {
+            var xmlDoc = null;
+            try {//Internet Explorer
+                xmlDoc = new ActiveXObject("Microsoft.XMLDOM")
+            } catch (e) {
+                try {//Firefox, Mozilla, Opera, etc.
+                    xmlDoc = document.implementation.createDocument("", "", null)
+                } catch (e) {
+                    alert(e.message)
+                }
+            }
+            try {
+                xmlDoc.async = false;
+                xmlDoc.load(dname);
+                return (xmlDoc);
+            } catch (e) {
+                alert(e.message)
+            }
+            return (xmlDoc);
+        }
+    </script>
+```
+
+**运行结果**
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210191933272.png" alt="image-20221210191933272" style="zoom: 80%;" />
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210191952409.png" alt="image-20221210191952409" style="zoom: 80%;" />
+
+<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210192018353.png" alt="image-20221210192018353" style="zoom:80%;" />
+
+
+
+# 六、
+
+xsl展示没有多于的技巧，该循环循环，设置好跨行和居中即可
+
+**dtd**
+
+```dtd
+<!--DTD定义-->
+
+<!--        根元素，包含若干基本信息-->
+<!ELEMENT 学生 (个人基本信息,学历和工作简历,已修课程,已获奖励,已发表论文)>
+<!--        个人基本信息-->
+<!ELEMENT 个人基本信息 (照片,姓名,性别,民族,出生地,通讯地址,电子邮件)>
+<!--        通讯地址-->
+<!ELEMENT 通讯地址 (条目*)>
+<!--        学历和工作简历-->
+<!ELEMENT 学历和工作简历 (条目*)>
+<!--        已修课程-->
+<!ELEMENT 已修课程 (条目*)>
+<!--        已获奖励-->
+<!ELEMENT 已获奖励 (条目*)>
+<!--        已发表论文-->
+<!ELEMENT 已发表论文 (条目*)>
+
+<!ELEMENT 照片 (#PCDATA)>
+<!ELEMENT 姓名 (#PCDATA)>
+<!ELEMENT 性别 (#PCDATA)>
+<!ELEMENT 民族 (#PCDATA)>
+<!ELEMENT 出生地 (#PCDATA)>
+<!ELEMENT 电子邮件 (#PCDATA)>
+<!ELEMENT 条目 (#PCDATA)>
+```
+
+**xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 外部引入DTD -->
+<!DOCTYPE 学生 SYSTEM "student.dtd">
+<!--引用XSL显示数据-->
+<?xml-stylesheet type="text/xsl" href="student.xsl"?>
+<学生>
+    <个人基本信息>
+        <照片>miffy.jpg</照片>
+        <姓名>米菲</姓名>
+        <性别>女</性别>
+        <民族>兔佳族</民族>
+        <出生地>大荷兰</出生地>
+        <通讯地址>
+            <条目>130012</条目>
+            <条目>吉林省长春市前进大街 2699 号</条目>
+            <条目>吉林大学计算机科学与技术学院</条目>
+        </通讯地址>
+        <电子邮件>miffy@yahoo.com</电子邮件>
+    </个人基本信息>
+    <学历和工作简历>
+        <条目>2003 年毕业于吉林大学附属小学</条目>
+        <条目>2006 年毕业于吉林大学附属中学初中部</条目>
+        <条目>2009 年毕业于吉林大学附属中学高中部</条目>
+        <条目>2013 年毕业于吉林大学计算机学院</条目>
+        <条目>2012.07 至 2012.09 在吉林大学就业指导中心实习</条目>
+    </学历和工作简历>
+    <已修课程>
+        <条目>数据结构</条目>
+        <条目>数据库原理</条目>
+        <条目>C 语言程序设计</条目>
+        <条目>Java 语言程序设计</条目>
+        <条目>Web 应用开发基础</条目>
+        <条目>XML 语言</条目>
+    </已修课程>
+    <已获奖励>
+        <条目>2012 获中国大学生创新项目一等奖</条目>
+        <条目>2013 获中国大学生软件竞赛一等奖</条目>
+    </已获奖励>
+    <已发表论文>
+        <条目>人机对话中关键技术的探索，2011 年发表于《机器与人》创刊号第 1 页</条目>
+        <条目>米菲家族祖先追踪，2012 年发表于《物种起源》卷 99999 第 8888 页</条目>
+    </已发表论文>
+</学生>
+```
+
+**xsl**
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:template match="/">
+        <html>
+            <body>
+                <font face="STXinwei">
+                    <h3 align = "center">米菲的简历</h3>
+                    <!-- 使用表格展示简历信息 -->
+                    <table border="1" align = "center" cellpadding="10">                        <!--CCFFFF-->
+                        <tr>
+                            <td bgcolor="#5F9EA0" width = "70" align = "center">姓名</td>
+                            <td bgcolor="#E0FFFF" width = "300">
+                                <xsl:value-of select="/学生/个人基本信息/姓名"/>
+                            </td>
+                            <td rowspan="6">
+                                <img>
+                                    <xsl:attribute name="src">
+                                        <xsl:value-of select="/学生/个人基本信息/照片"/>
+                                    </xsl:attribute>
+                                </img>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center">性别</td>
+                            <td bgcolor="#E0FFFF">
+                                <xsl:value-of select="/学生/个人基本信息/性别"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center">民族</td>
+                            <td bgcolor="#E0FFFF">
+                                <xsl:value-of select="/学生/个人基本信息/民族"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center">出生地</td>
+                            <td bgcolor="#E0FFFF">
+                                <xsl:value-of select="/学生/个人基本信息/出生地"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center">通讯地址</td>
+                            <td bgcolor="#E0FFFF">
+                                <xsl:for-each select="/学生/个人基本信息/通讯地址/条目">
+                                    <ul>
+                                        <li>
+                                            <xsl:value-of select="."/>
+                                        </li>
+                                    </ul>
+                                </xsl:for-each>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center">电邮</td>
+                            <td bgcolor="#E0FFFF">
+                                <xsl:value-of select="/学生/个人基本信息/电子邮件"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center" colspan = "3">学历和工作简历</td>
+                        </tr>
+                        <!-- 循环展示工作 -->
+                        <tr>
+                            <td bgcolor="#E0FFFF" colspan = "3">
+                                <xsl:for-each select="/学生/学历和工作简历/条目">
+                                    <ul>
+                                        <li>
+                                            <xsl:value-of select="."/>
+                                        </li>
+                                    </ul>
+                                </xsl:for-each>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center" colspan = "3">已修课程</td>
+                        </tr>
+                        <!-- 循环展示已修课程 -->
+                        <tr>
+                            <td bgcolor="#E0FFFF" colspan = "3">
+                                <xsl:for-each select="/学生/已修课程/条目">
+                                    <ul>
+                                        <li>
+                                            <xsl:value-of select="."/>
+                                        </li>
+                                    </ul>
+                                </xsl:for-each>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center" colspan = "3">已获奖励</td>
+                        </tr>
+                        <!-- 循环展示已获奖励 -->
+                        <tr>
+                            <td bgcolor="#E0FFFF" colspan = "3">
+                                <xsl:for-each select="/学生/已获奖励/条目">
+                                    <ol>
+                                        <li>
+                                            <xsl:value-of select="."/>
+                                        </li>
+                                    </ol>
+                                </xsl:for-each>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#5F9EA0" align = "center" colspan = "3">已发表论文</td>
+                        </tr>
+                        <!-- 循环展示已发表论文 -->
+                        <tr>
+                            <td bgcolor="#E0FFFF" colspan = "3">
+                                <xsl:for-each select="/学生/已发表论文/条目">
+                                    <ol>
+                                        <li>
+                                            <xsl:value-of select="."/>
+                                        </li>
+                                    </ol>
+                                </xsl:for-each>
+                            </td>
+                        </tr>
+                    </table>>
+                </font>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>
+```
+
+**运行结果**
+
+![image-20221210191710645](https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20221210191710645.png)
 
