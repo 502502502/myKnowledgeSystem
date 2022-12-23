@@ -8,16 +8,18 @@ nowcoder-community
 vue-admin
 vue-web
 
-nowcoder-picture
-nowcoder-sms
-nowcoder-search
-nowcoder-monitor
+nowcoder-document:项目文档、数据库文件
+nowcoder-web: 唯一war包，存储静态资源、远程调用接口、uv、dau、降级、熔断
 
-nowcoder-api
-nowcoder-commons
-nowcoder-base
-nowcoder-xo
-nowcoder-utils
+nowcoder-commons：entity、Service、Dao、vo
+nowcoder-utils：工具模块
+
+nowcoder-picture: 图片上传、更新、获取、验证码获取
+nowcoder-sms：kafka、事件、通知、短信
+nowcoder-search：elastucsearch、关键词检索、标签检索
+
+nowcoder-user：用户、登录、权限控制
+nowcoder-post: 帖子功能
 ```
 
 
