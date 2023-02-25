@@ -257,7 +257,7 @@ docker logs -f -t --tail 10 容器ID或容器名称
 #拉取镜像
 docker pull mysql:8.0
 #运行并挂载
-docker run -p 3306:3306 --name mysql \
+docker run -p 3306:3306 --name mysql --restart=always \
 -v /mydata/mysql/log:/var/log/mysql \
 -v /mydata/mysql/data:/var/lib/mysql \
 -e MYSQL_ROOT_PASSWORD=root \
@@ -284,8 +284,6 @@ vi my.cnf
     skip-name-resolve
 #重启
 docker restart mysql
-#设置其启动
-docker update mysql --restart=always
 ```
 
 
