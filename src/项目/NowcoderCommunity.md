@@ -288,6 +288,41 @@ docker restart mysql
 
 
 
+```shell
+#拉取镜像
+docker pull mysql:5.6.51
+#运行并挂载
+docker run -p 3308:3308 --name mysql5 --restart=always \
+-v /mydata/mysql5/log:/var/log/mysql \
+-v /mydata/mysql5/data:/var/lib/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+-d mysql:5.6.51
+
+#查看状态
+docker ps
+docker ps -a
+
+#添加配置文件
+docker cp mysql5:/etc/mysql/ /mydata/mysql5/conf
+cd /mydata/mysql5/conf
+vi my.cnf
+    [client]
+    default-character-set=utf8
+    [mysql]
+    default-character-set=utf8
+    [mysqld]
+    init_connect='SET collation_connection = utf8_unicode_ci'
+    init_connect='SET NAMES utf8'
+    character-set-server=utf8
+    collation-server=utf8_unicode_ci
+    skip-character-set-client-handshake
+    skip-name-resolve
+#重启
+docker restart mysql
+```
+
+
+
 **安装redis**
 
 ```shell
