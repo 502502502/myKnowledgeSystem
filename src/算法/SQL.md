@@ -1,4 +1,4 @@
-### 1、组合表
+### 1、连接
 
 [题目](https://leetcode.cn/problems/combine-two-tables/description/)
 
@@ -22,7 +22,7 @@ from Person left join Address
 on Person.PersonId = Address.PersonId;
 ```
 
-### 2、组合表
+### 2、连接
 
 [题目](https://leetcode.cn/problems/employees-earning-more-than-their-managers/description/)
 
@@ -35,7 +35,7 @@ where A.managerId = B.Id
 and A.salary > B.salary;
 ```
 
-### 3、分组查询数量
+### 3、分组，计数
 
 [题目](https://leetcode.cn/problems/duplicate-emails/description/)
 
@@ -94,7 +94,7 @@ from Activity
 group by player_id
 ```
 
-### 8、空值判断
+### 8、空值
 
 [题目](https://leetcode.cn/problems/find-customer-referee/description/)
 
@@ -104,7 +104,7 @@ from customer
 where referee_id is null or referee_id != 2	
 ```
 
-### 9、分组排序
+### 9、分组，排序
 
 [题目](https://leetcode.cn/problems/customer-placing-the-largest-number-of-orders/description/)
 
@@ -130,100 +130,144 @@ where sales_id not in(
 )
 ```
 
-### 4、
+### 4、连接
 
-
+[题目](https://leetcode.cn/problems/customers-who-never-order/description/)
 
 ```sql
-
+select Name as Customers
+from Customers left join Orders
+on Customers.Id = Orders.CustomerId
+where Orders.Id is null;
 ```
 
-### 4、
+### 4、条件
 
-
+[题目](https://leetcode.cn/problems/swap-salary/description/)
 
 ```sql
+update Salary
+set sex = 
+if(sex='m','f','m')
 
+update Salary
+set sex = 
+case sex
+    when 'm' then 'f'
+    else 'm'
+end
 ```
 
-### 4、
+### 4、分组，组内计数
 
-
+[题目·](https://leetcode.cn/problems/actors-and-directors-who-cooperated-at-least-three-times/description/)
 
 ```sql
-
+select actor_id,director_id
+from ActorDirector
+group by actor_id,director_id
+having count(*) >= 3
 ```
 
-### 4、
+### 4、连接，分组，过滤分组，组内最值
 
-
+[题目](https://leetcode.cn/problems/sales-analysis-iii/description/)
 
 ```sql
-
+select Product.product_id, Product.product_name
+from Product inner join Sales
+on Product.product_id=Sales.product_id
+group by product_id
+having max(Sales.sale_date) <= '2019-03-31' and min(Sales.sale_date) >= '2019-01-01'
 ```
 
-### 4、
+### 4、分组，过滤分组，组内去重
 
-
+[题目](https://leetcode.cn/problems/user-activity-for-the-past-30-days-i/description/)
 
 ```sql
-
+select activity_date as day, count(distinct user_id) as active_users
+from Activity
+group by activity_date
+having activity_date <= '2019-07-27' and activity_date > '2019-06-27'
 ```
 
-### 4、
+### 4、过滤，排序，去重
 
-
+[题目](https://leetcode.cn/problems/article-views-i/description/)
 
 ```sql
-
+select distinct author_id as id
+from Views
+where author_id=viewer_id
+order by author_id  asc
 ```
 
-### 4、
+### 4、连接，分组，排序，条件
 
-
+[题目](https://leetcode.cn/problems/top-travellers/description/)
 
 ```sql
-
+select u.name as name, ifnull(sum(r.distance),0) as travelled_distance
+from Users as u left join Rides as r
+on u.id=r.user_id
+group by u.id
+order by sum(r.distance) desc, u.name asc
 ```
 
-### 4、
+### 4、分组，展示分组，分组内排序，分组内去重
 
-
+[题目](https://leetcode.cn/problems/group-sold-products-by-the-date/description/)
 
 ```sql
-
+select sell_date, count(distinct product) as num_sold, 
+        group_concat(distinct product order by product asc) as products
+from Activities
+group by sell_date
 ```
 
-### 4、
+### 4、模糊过滤
 
-
+[题目](https://leetcode.cn/problems/patients-with-a-condition/description/)
 
 ```sql
-
+select *
+from Patients
+where conditions like 'DIAB1%' or conditions like '% DIAB1%'
 ```
 
-### 4、
+### 4、连接，过滤行，分组
 
-
+[题目](https://leetcode.cn/problems/customer-who-visited-but-did-not-make-any-transactions/description/)
 
 ```sql
-
+select v.customer_id as customer_id, count(*) as count_no_trans
+from Visits as v left join Transactions as t
+on v.visit_id=t.visit_id
+where t.visit_id is null
+group by v.customer_id
 ```
 
-### 4、
+### 4、连接，分组，过滤分组，组内统计
 
-
+[题目](https://leetcode.cn/problems/bank-account-summary-ii/description/)
 
 ```sql
-
+select u.name as name,sum(amount) as balance
+from Users as u join  Transactions as t
+on u.account=t.account
+group by u.account
+having sum(amount) > 10000
 ```
 
-### 4、
+### 4、字符操作函数，排序
 
-
+[题目·](https://leetcode.cn/problems/fix-names-in-a-table/description/)
 
 ```sql
-
+select user_id,concat(upper(left(name,1)), lower(right(name, length(name) -1))) as name
+from Users
+order by user_id asc
 ```
 
 ### 4、
