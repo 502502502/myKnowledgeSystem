@@ -725,11 +725,13 @@ Caffeine 是一个基于Java 8的高性能本地缓存框架
 
 #### 15、难点在哪些地方
 
-
+Matsuyama R, Tsuchiya A, Nishii O. Predictive factors for emergent surgical intervention in patients with ovarian endometrioma hospital-ized for pelvic inflammatory disease: a retrospective observational study［J］．Journal of Observational study ［J］．Journal of Obstetrics & Gynaecology Research,2018,44:286-291.
 
 #### 16、哪些方面可以优化
 
-服务器主动推送(消息，私信)
+服务器主动推送(消息，私信)，前端可以获取实时数据，特别是私信模块；
+
+
 
 
 
