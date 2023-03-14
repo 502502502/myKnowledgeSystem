@@ -656,183 +656,265 @@ copyOf()内部实际调用了 System.arraycopy() 方法
 
 
 
-## 35、HashMap有哪些成员变量
+
+
+## 35、 Collection框架中实现比较要怎么做？
+
+第一种，实体类实现Comparable接口，并实现 compareTo(T t) 方法，称为内部比较器。
+
+第二种，创建一个外部比较器，这个外部比较器要实现Comparator接口的 compare(T t1, T t2)方法。
+
+
+
+## 36、 Iterator 和 ListIterator 有什么区别？
+
+- 遍历。使用Iterator，可以遍历所有集合，如Map，List，Set；但只能在向前方向上遍历集合中的元素。
+
+使用ListIterator，只能遍历List实现的对象，但可以向前和向后遍历集合中的元素。
+
+- 添加元素。Iterator无法向集合中添加元素；而，ListIteror可以向集合添加元素。
+- 修改元素。Iterator无法修改集合中的元素；而，ListIterator可以使用set()修改集合中的元素。
+- 索引。Iterator无法获取集合中元素的索引；而，使用ListIterator，可以获取集合中元素的索引。
+
+
+
+## 37、 讲一讲快速失败(fail-fast)和安全失败(fail-safe)
+
+**快速失败（fail—fast）**
+
+- 在用迭代器遍历一个集合对象时，如果遍历过程中对集合对象的内容进行了修改（增加、删除、修改），则会抛出Concurrent Modification Exception。
+- 原理：迭代器在遍历时直接访问集合中的内容，并且在遍历过程中使用一个 modCount 变量。集合在被遍历期间如果内容发生变化，就会改变modCount的值。每当迭代器使用hashNext()/next()遍历下一个元素之前，都会检测modCount变量是否为expectedmodCount值，是的话就返回遍历；否则抛出异常，终止遍历。
+- 注意：这里异常的抛出条件是检测到 modCount！=expectedmodCount 这个条件。如果集合发生变化时修改modCount值刚好又设置为了expectedmodCount值，则异常不会抛出。因此，不能依赖于这个异常是否抛出而进行并发操作的编程，这个异常只建议用于检测并发修改的bug。
+- 场景：java.util包下的集合类都是快速失败的，不能在多线程下发生并发修改（迭代过程中被修改），比如HashMap、ArrayList 这些集合类。
+
+**安全失败（fail—safe）**
+
+- 采用安全失败机制的集合容器，在遍历时不是直接在集合内容上访问的，而是先复制原有集合内容，在拷贝的集合上进行遍历。
+- 原理：由于迭代时是对原集合的拷贝进行遍历，所以在遍历过程中对原集合所作的修改并不能被迭代器检测到，所以不会触发Concurrent Modification Exception。
+- 缺点：基于拷贝内容的优点是避免了Concurrent Modification Exception，但同样地，迭代器并不能访问到修改后的内容，即：迭代器遍历的是开始遍历那一刻拿到的集合拷贝，在遍历期间原集合发生的修改迭代器是不知道的。
+- 场景：java.util.concurrent包下的容器都是安全失败，可以在多线程下并发使用，并发修改，比如：ConcurrentHashMap。
+
+
+
+
+
+## 38、说一下HashMap
+
+> 底层数据结构
+
+在JDK1.7 中，由“数组+链表”组成，数组是 HashMap 的主体，链表则是主要为了解决哈希冲突而存在的。
+
+在JDK1.8 中，由“数组+链表+红黑树”组成。当链表过长，则会严重影响 HashMap 的性能，红黑树搜索时间复杂度是 O(logn)，而链表是糟糕的 O(n)。因此，JDK1.8 对数据结构做了进一步的优化，引入了红黑树，链表和红黑树在达到一定条件会进行转换：
+
+- 当链表超过 8 且数据总量超过 64 才会转红黑树。
+- 将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树，以减少搜索时间。
+
+> 为什么在解决 hash 冲突的时候，不直接用红黑树？而选择先用链表，再转红黑树?
+
+因为红黑树需要进行左旋，右旋，变色这些操作来保持平衡，而单链表不需要。当元素小于 8 个的时候，此时做查询操作，链表结构已经能保证查询性能。当元素大于 8 个的时候， 红黑树搜索时间复杂度是 O(logn)，而链表是 O(n)，此时需要红黑树来加快查询速度，但是新增节点的效率变慢了。
+
+因此，如果一开始就用红黑树结构，元素太少，新增效率又比较慢，无疑这是浪费性能的
+
+> 用二叉查找树可以么?
+
+可以。但是二叉查找树在特殊情况下会变成一条线性结构（这就跟原来使用链表结构一样了，造成很深的问题），遍历查找会非常慢。
+
+> 为什么链表改为红黑树的阈值是 8?
+
+链表中元素个数为 8 时的概率已经非常小，再多的就更少了，是根据概率统计而选择的。
+
+> 说说负载因子
+
+在数组定义好长度之后，负载因子越大，所能容纳的键值对个数越多
+
+默认负载因子（0.75）在时间和空间成本上提供了很好的折衷。较高的值会降低空间开销，但提高查找成本（体现在大多数的HashMap类的操作，包括get和put）
+
+> HashMap 中 key 的存储索引是怎么计算的？
+
+首先根据key的值计算出hashcode的值，然后根据hashcode计算出hash值，最后通过hash&（length-1）计算得到存储的位置。
+
+> JDK1.8 为什么要 hashcode 异或其右移十六位的值？
+
+因为后边需要和数组长度-1进行于运算，可以在数组 table 的 length 比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。
+
+> 为什么 hash 值要与length-1相与？
+
+- 把 hash 值对数组长度取模运算，模运算的消耗很大，没有位运算快。
+- 当 length 总是 2 的n次方时，h& (length-1) 运算等价于对length取模，也就是 h%length，但是 & 比 % 具有更高的效率。
+
+> HashMap数组的长度为什么是 2 的幂次方？
+
+这样做效果上等同于取模，在速度、效率上比直接取模要快得多。除此之外，2 的 N 次幂有助于减少碰撞的几率。如果 length 为2的幂次方，则 length-1 转化为二进制必定是11111……的形式，在与h的二进制与操作效率会非常的快，而且空间不浪费，如果不是2的幂次方，减掉1后最后一位为0的可能性会很大，导致做完与运算后，最后一位都是0，加大了位置碰撞的概率。
+
+> 数组容量计算
+
+HashMap 构造函数允许用户传入的容量不是 2 的 n 次方，因为它可以自动地将传入的容量转换为 2 的 n 次方
 
 ```java
-public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable {
-    // 序列号
-    private static final long serialVersionUID = 362498820763181265L;
-    // 默认的初始容量是16
-    static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
-    // 最大容量
-    static final int MAXIMUM_CAPACITY = 1 << 30;
-    // 默认的填充因子
-    static final float DEFAULT_LOAD_FACTOR = 0.75f;
-    // 当桶(bucket)上的结点数大于这个值时会转成红黑树
-    static final int TREEIFY_THRESHOLD = 8;
-    // 当桶(bucket)上的结点数小于这个值时树转链表
-    static final int UNTREEIFY_THRESHOLD = 6;
-    // 桶中结构转化为红黑树对应的table的最小容量
-    static final int MIN_TREEIFY_CAPACITY = 64;
-    // 存储元素的数组，总是2的幂次倍
-    transient Node<k,v>[] table;
-    // 存放具体元素的集
-    transient Set<map.entry<k,v>> entrySet;
-    // 存放元素的个数，注意这个不等于数组的长度。
-    transient int size;
-    // 每次扩容和更改map结构的计数器
-    transient int modCount;
-    // 临界值(容量*填充因子) 当实际大小超过临界值时，会进行扩容
-    int threshold;
-    // 加载因子
-    final float loadFactor;
-}
+static final int tableSizeFor(int cap) {
+        int n = cap - 1;
+    	//将最高有效位以及后边都变成1
+        n |= n >>> 1;
+        n |= n >>> 2;
+        n |= n >>> 4;
+        n |= n >>> 8;
+        n |= n >>> 16;
+    	//加1即可
+        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    }
+/*
+解释：位或( | )
+int n = cap - 1;　让cap-1再赋值给n的目的是另找到的目标值大于或等于原值。例如二进制1000，十进制数值为8。如果不对它减1而直接操作，将得到答案10000，即16。显然不是结果。减1后二进制为111，再进行操作则会得到原来的数值1000，即8。
+*/
 ```
 
+> HashMap 的put方法流程？
 
+1. 首先根据 key 的值计算 hash 值，找到该元素在数组中存储的下标；
+2. 如果数组是空的，则调用 resize 进行初始化；
+3. 如果没有哈希冲突直接放在对应的数组下标里；
+4. 如果冲突了，且 key 已经存在，就覆盖掉 value；
+5. 如果冲突后，发现该节点是红黑树，就将这个节点挂在树上；
+6. 如果冲突后是链表，判断该链表是否大于 8 ，如果大于 8 并且数组容量小于 64，就进行扩容；如果链表节点大于 8 并且数组的容量大于 64，则将这个结构转换为红黑树；否则，链表插入键值对，若 key 存在，就覆盖掉 value。
 
-- **loadFactor 加载因子**
+> HashMap 的扩容方式？
 
-  loadFactor 加载因子是控制数组存放数据的疏密程度，loadFactor 越趋近于 1，那么 数组中存放的数据(entry)也就越多，也就越密，也就是会让链表的长度增加，loadFactor 越小，也就是趋近于 0，数组中存放的数据(entry)也就越少，也就越稀疏。
+Hashmap 在容量超过负载因子所定义的容量之后，就会扩容。Java 里的数组是无法自动扩容的，方法是将 Hashmap 的大小扩大为原来数组的两倍，并将原来的对象放入新的数组中。
 
-  **loadFactor 太大导致查找元素效率低，太小导致数组的利用率低，存放的数据会很分散。loadFactor 的默认值为 0.75f 是官方给出的一个比较好的临界值**。
+JDK1.7 重新计算每个元素在数组中的位置，使用了单链表的头插入方式解决冲突
 
-  给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量达到了 16 * 0.75 = 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。
+JDK1.8resize 之后，元素的位置在原来的位置，或者原来的位置 +oldCap (原来哈希表的长度），只需要看看原来的 hash 值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引 + oldCap ”，使用尾插解决冲突。
 
-- **threshold**
+> 还知道哪些hash算法？
 
-  **threshold = capacity \* loadFactor**，**当 Size>=threshold**的时候，那么就要考虑对数组的扩增了，也就是说，这个的意思就是 **衡量数组是否需要扩增的一个标准**。
+Hash函数是指把一个大范围映射到一个小范围，目的往往是为了节省空间，使得数据容易保存。 比较出名的有MurmurHash、MD4、MD5等等。
 
+> key 可以为 Null 吗?
 
+可以，key 为 Null 的时候，hash算法最后的值以0来计算，也就是放在数组的第一个位置。
 
-## 36、HashMap的put方法是如何实现的
+> 一般用什么作为HashMap的key?
 
-JDK1.7 put 方法
+一般用Integer、String 这种不可变类当 HashMap 当 key，而且 String 最为常用。
 
-- ① 如果定位到的数组位置没有元素 就直接插入。
-- ② 如果定位到的数组位置有元素，遍历以这个元素为头结点的链表，依次和插入的 key 比较，如果 key 相同就直接覆盖，不同就采用头插法插入元素。
+- 因为字符串是不可变的，所以在它创建的时候 hashcode 就被缓存了，不需要重新计算。这就是 HashMap 中的键往往都使用字符串的原因。
+- 因为获取对象的时候要用到 equals() 和 hashCode() 方法，那么键对象正确的重写这两个方法是非常重要的,这些类已经很规范的重写了 hashCode() 以及 equals() 方法。
 
-增加红黑树后
+> 用可变类当 HashMap 的 key 有什么问题?
 
-+ 如果定位到的数组位置没有元素 就直接插入。
-+ 如果定位到的数组位置有元素就和要插入的 key 比较，如果 key 相同就直接覆盖，如果 key 不相同，就判断 p 是否是一个树节点，如果是就调用`e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value)`将元素添加进入。如果不是就遍历链表插入(插入的是链表尾部)。
+hashcode 可能发生改变，导致 put 进去的值，无法 get 出
 
+> HashMap的线程安全问题
 
+**多线程下扩容死循环**
 
-## 36、HashMap是如何扩容的
+JDK1.7中的 HashMap 使用头插法插入元素，在多线程的环境下，扩容的时候有可能导致环形链表的出现，形成死循环
 
-当元素达到指定比例时，HashMap会调用resize 方法进行扩容
+**多线程的put可能导致元素的丢失**
 
-若容量已经达到上限，不进行扩容；
+多线程同时执行 put 操作，如果计算出来的索引位置是相同的，那会造成前一个 key 被后一个 key 覆盖，从而导致元素的丢失。
 
-否则扩充为原来的两倍
+**put和get并发时，可能导致get为null	**
 
-同时进行重新 hash 分配，遍历所有元素。
+线程1执行put时，因为元素个数超出threshold而导致rehash，线程2此时执行get，有可能导致这个问题。	
 
 
 
-## 37、ConcurrentHashMap1.7存储结构
+## 39、说一下ConcurrentHashMap
 
-![image-20220912205459801](https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20220912205459801.png)
+> ConcurrentHashMap 的实现原理是什么？
 
-ConcurrnetHashMap 由很多个 Segment 组合，而每一个 Segment 是一个类似于 HashMap 的结构，所以每一个 HashMap 的内部可以进行扩容。
+JDK1.7 中的 ConcurrentHashMap 是由 `Segment` 数组结构和 `HashEntry` 数组结构组成，即 ConcurrentHashMap 把哈希桶数组切分成小数组（Segment ），每个小数组有 n 个 HashEntry 组成。将数据分为一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一段数据时，其他段的数据也能被其他线程访问，实现了真正的并发访问。
 
-但是 Segment 的个数一旦初始化就不能改变，默认 Segment 的个数是 16 个，你也可以认为 ConcurrentHashMap 默认支持最多 16 个线程并发
+用 volatile 修饰了 HashEntry 的数据 value 和 下一个节点 next，保证了多线程环境下数据获取时的**可见性**！
 
 
 
-## 38、ConcurrnetHashMap 1.7的初始化逻辑
+DK1.8 中的ConcurrentHashMap 选择了与 HashMap 相同的**Node数组+链表+红黑树**结构；在锁的实现上，抛弃了原有的 Segment 分段锁，采用` CAS + synchronized`实现更加细粒度的锁。
 
-1. 必要参数校验：容量，负载因子，并发级别
-2. 校验并发级别 concurrencyLevel 大小，如果大于最大值，重置为最大值。无参构造**默认值是 16.**
-3. 寻找并发级别 concurrencyLevel 之上最近的 **2 的幂次方**值，作为初始化容量大小，**默认是 16**。
-4. 记录 segmentShift 偏移量，这个值为【容量 = 2 的N次方】中的 N，在后面 Put 时计算位置时会用到。**默认是 32 - sshift = 28**.
-5. 记录 segmentMask，默认是 ssize - 1 = 16 -1 = 15.
-6. **初始化 segments[0]**，**默认大小为 2**，**负载因子 0.75**，**扩容阀值是 2\*0.75=1.5**，插入第二个值时才会进行扩容。
+将锁的级别控制在了更细粒度的哈希桶数组元素级别，也就是说只需要锁住这个链表头节点（红黑树的根节点），就不会影响其他的哈希桶数组元素的读写，大大提高了并发度。
 
+> JDK1.8 中为什么使用内置锁 synchronized替换 可重入锁 ReentrantLock？
 
+- 在 JDK1.6 中，对 synchronized 锁的实现引入了大量的优化，并且 synchronized 有多种锁状态，会从无锁 -> 偏向锁 -> 轻量级锁 -> 重量级锁一步步转换。
+- 减少内存开销 。假设使用可重入锁来获得同步支持，那么每个节点都需要通过继承 AQS 来获得同步支持。但并不是每个节点都需要获得同步支持的，只有链表的头节点（红黑树的根节点）需要同步，这无疑带来了巨大内存浪费。
 
-## 39、ConcurrentHashMap1.7在 put 一个数据时的处理流程
+> ConcurrentHashMap 的 put 方法执行逻辑是什么
 
-1. 计算要 put 的 key 的位置，获取指定位置的 Segment。
+JDK1.7首先会尝试获取锁，如果获取失败肯定就有其他线程存在竞争，则利用 `scanAndLockForPut()` 自旋获取锁。
 
-2. 如果指定位置的 Segment 为空，则初始化这个 Segment.
+1. 尝试自旋获取锁。
+2. 如果重试的次数达到了 `MAX_SCAN_RETRIES` 则改为阻塞锁获取，保证能获取成功。
 
-   **初始化 Segment 流程：**
 
-   1. 检查计算得到的位置的 Segment 是否为null.
-   2. 为 null 继续初始化，使用 Segment[0] 的容量和负载因子创建一个 HashEntry 数组。
-   3. 再次检查计算得到的指定位置的 Segment 是否为null.
-   4. 使用创建的 HashEntry 数组初始化这个 Segment.
-   5. 自旋判断计算得到的指定位置的 Segment 是否为null，使用 CAS 在这个位置赋值为 Segment.
 
-3. Segment.put 插入 key,value 值
+JDK1.8
 
-   1. tryLock() 获取锁，获取不到使用 **`scanAndLockForPut`** 方法继续获取。
+1. 根据 key 计算出 hash 值；
+2. 判断是否需要进行初始化；
+3. 定位到 Node，拿到首节点 f，判断首节点 f：
+   - 如果为 null ，则通过 CAS 的方式尝试添加；
+   - 如果为 `f.hash = MOVED = -1` ，说明其他线程在扩容，参与一起扩容；
+   - 如果都不满足 ，synchronized 锁住 f 节点，判断是链表还是红黑树，遍历插入；
+4. 当在链表长度达到 8 的时候，数组扩容或者将链表转换为红黑树。
 
-      **`scanAndLockForPut`**不断的自旋 `tryLock()` 获取锁。当自旋次数大于指定次数时，使用 `lock()` 阻塞获取锁
+> ConcurrentHashMap 的 get 方法执行逻辑是什么？
 
-   2. 计算 put 的数据要放入的 index 位置，然后获取这个位置上的 HashEntry 。
+**JDK1.7**
 
-   3. 遍历 put 新元素，为什么要遍历？因为这里获取的 HashEntry 可能是一个空元素，也可能是链表已存在，所以要区别对待。
+1、根据 key 计算出 hash 值定位到具体的 Segment 
 
-      如果这个位置上的 **HashEntry 不存在**：
-   
-   1. 如果当前容量大于扩容阀值，小于最大容量，**进行扩容**。
-      2. 直接头插法插入。
+2、再根据 hash 值获取定位 HashEntry 对象，并对 HashEntry 对象进行链表遍历，找到对应元素。
 
-      如果这个位置上的 **HashEntry 存在**：
-   
-      1. 判断链表当前元素 Key 和 hash 值是否和要 put 的 key 和 hash 值一致。一致则替换值
-      2. 不一致，获取链表下一个节点，直到发现相同进行值替换，或者链表表里完毕没有相同的。
-      1. 如果当前容量大于扩容阀值，小于最大容量，**进行扩容**。
-         2. 直接链表头插法插入。
-   
-   4. 如果要插入的位置之前已经存在，替换后返回旧值，否则返回 null.
+3、 HashEntry 涉及到的共享变量都使用 volatile 修饰，volatile 可以保证内存可见性，所以每次获取时都是最新值。
 
+**JDK1.8**
 
+1. 根据 key 计算出 hash 值，判断数组是否为空；
+2. 如果是首节点，就直接返回；
+3. 如果是红黑树结构，就从红黑树里面查询；
+4. 如果是链表结构，循环遍历判断。
 
-## 40、ConcurrentHashMap 1.7扩容 rehash
+> ConcurrentHashMap 的 get 方法是否要加锁，为什么？
 
-ConcurrentHashMap 的扩容只会扩容到原来的两倍。老数组里的数据移动到新的数组时，位置要么不变，要么变为 index+ oldSize，参数里的 node 会在扩容之后使用链表**头插法**插入到指定位置。
+get 方法不需要加锁。因为 Node 的元素 value 和指针 next 是用 volatile 修饰的，在多线程环境下线程A修改节点的 value 或者新增节点的时候是对线程B可见的。
 
+> get 方法不需要加锁与 volatile 修饰的哈希桶数组有关吗？
 
+没有关系。哈希桶数组`table`用 volatile 修饰主要是保证在数组扩容的时候保证可见性。
 
-## 41、ConcurrentHashMap 1.8存储结构
+> ConcurrentHashMap 不支持 key 或者 value 为 null 的原因？★★★
 
-<img src="https://ningct.oss-cn-hangzhou.aliyuncs.com/image-20220913193455942.png" alt="image-20220913193455942" style="zoom:50%;" />
+ ConcurrentHashMap 是用于多线程的 ，如果`ConcurrentHashMap.get(key)`得到了 null ，这就无法判断，是映射的value是 null ，还是没有找到对应的key而为 null ，就有了二义性。因为单线程的时候，可以通过containsKey()判断是不是key，多线程由于是两步操作，在判断和取值时有其它的线程突然增加了null的key，会改变原来线程期望的结果。
 
-不再是之前的 **Segment 数组 + HashEntry 数组 + 链表**，而是 **Node 数组 + 链表 / 红黑树**。
+> ConcurrentHashMap 的并发度是什么？
 
-当冲突链表达到一定长度时，链表会转换成红黑树
+JDK1.7中，实际上就是ConcurrentHashMap中的分段锁个数，即Segment[]的数组长度，默认是16，这个值可以在构造函数中设置。
 
+JDK1.8中，已经摒弃了Segment的概念，选择了Node数组+链表+红黑树结构，并发度大小依赖于数组的大小。
 
+> ConcurrentHashMap 迭代器是强一致性还是弱一致性？
 
-## 42、ConcurrentHashMap 1.8初始化
+与 HashMap 迭代器是强一致性不同，ConcurrentHashMap 迭代器是弱一致性。
 
-ConcurrentHashMap 的初始化是通过**自旋和 CAS** 操作完成的。里面需要注意的是变量 `sizeCtl` ，它的值决定着当前的初始化状态。
+ConcurrentHashMap 的迭代器创建后，就会按照哈希表结构遍历每个元素，但在遍历过程中，内部元素可能会发生变化，如果变化发生在已遍历过的部分，迭代器就不会反映出来，而如果变化发生在未遍历过的部分，迭代器就会发现并反映出来，这就是弱一致性。
 
-1. -1 说明正在初始化
-2. -N 说明有N-1个线程正在进行扩容
-3. 表示 table 初始化大小，如果 table 没有初始化
-4. 表示 table 容量，如果 table　已经初始化。
+> JDK1.7 与 JDK1.8 中ConcurrentHashMap 的区别？
 
+- 数据结构：取消了 Segment 分段锁的数据结构，取而代之的是数组+链表+红黑树的结构。
+- 保证线程安全机制：JDK1.7 采用 Segment 的分段锁机制实现线程安全，其中 Segment 继承自 ReentrantLock 。JDK1.8 采用`CAS+synchronized `保证线程安全。
+- 锁的粒度：JDK1.7 是对需要进行数据操作的 Segment 加锁，JDK1.8 调整为对每个数组元素加锁（Node）。
+- 链表转化为红黑树：定位节点的 hash 算法简化会带来弊端，hash 冲突加剧，因此在链表节点数量大于 8（且数据总量大于等于 64）时，会将链表转化为红黑树进行存储。
+- 查询时间复杂度：从 JDK1.7的遍历链表O(n)， JDK1.8 变成遍历红黑树O(logN)。
 
+> ConcurrentHashMap 和 Hashtable 的效率哪个更高？为什么？
 
-## 43、ConcurrentHashMap 1.8Put添加元素
+ConcurrentHashMap 的效率要高于 Hashtable，因为 Hashtable 给整个哈希表加了一把大锁从而实现线程安全。而ConcurrentHashMap 的锁粒度更低，在 JDK1.7 中采用分段锁实现线程安全，在 JDK1.8 中采用`CAS+synchronized`实现线程安全
 
-1. 根据 key 计算出 hashcode 。
-2. 判断是否需要进行初始化。
-3. 即为当前 key 定位出的 Node，如果为空表示当前位置可以写入数据，利用 CAS 尝试写入，失败则自旋保证成功。
-4. 如果当前位置的 `hashcode == MOVED == -1`,则需要进行扩容。
-5. 如果都不满足，则利用 synchronized 锁写入数据。
-6. 如果数量大于 `TREEIFY_THRESHOLD` 则要执行树化方法，在treeifyBin中会首先判断当前数组长度≥64时才会将链表转换为红黑树。
+> 具体说一下Hashtable的锁机制
 
+Hashtable 是使用 synchronized来实现线程安全的，给整个哈希表加了一把大锁，多线程访问时候，只要有一个线程访问或操作该对象，那其他线程只能阻塞等待需要的锁被释放
 
+> 多线程下安全的操作 map还有其他方法吗？
 
-## 44、ConcurrentHashMap 1.8查找元素
-
-1. 根据 hash 值计算位置。
-2. 查找到指定位置，如果头节点就是要找的，直接返回它的 value.
-3. 如果头节点 hash 值小于 0 ，说明正在扩容或者是红黑树，查找之。
-4. 如果是链表，遍历查找之。
+可以使用`Collections.synchronizedMap`方法，对方法进行加同步锁,本质也是对 HashMap 进行全表锁,在竞争激烈的多线程环境下性能依然也非常差.。
