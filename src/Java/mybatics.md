@@ -119,3 +119,4 @@ Mybatis提供了9种动态sql标签：trim、where、set、foreach、if、choose
 + Mapper接口方法的输入参数类型和mapper.xml中定义的每个sql的parameterType类型相同； 
 + Mapper接口方法的输出参数类型和mapper.xml中定义的每个sql的resultType的类型相同； 
 + Mapper.xml文件中的namespace即是mapper接口的类路径。
+
