@@ -701,7 +701,7 @@ copyOf()内部实际调用了 System.arraycopy() 方法
 
 
 
-## 38、说一下HashMap
+## 1、说一下HashMap
 
 > 底层数据结构
 
@@ -738,7 +738,7 @@ copyOf()内部实际调用了 System.arraycopy() 方法
 
 > JDK1.8 为什么要 hashcode 异或其右移十六位的值？
 
-因为后边需要和数组长度-1进行于运算，可以在数组 table 的 length 比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。
+因为后边需要和数组长度-1进行于运算，可以在数组的 length 比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。
 
 > 为什么 hash 值要与length-1相与？
 
@@ -823,7 +823,7 @@ JDK1.7中的 HashMap 使用头插法插入元素，在多线程的环境下，�
 
 
 
-## 39、说一下ConcurrentHashMap
+## 2、说一下ConcurrentHashMap
 
 > ConcurrentHashMap 的实现原理是什么？
 
@@ -921,3 +921,22 @@ Hashtable 是使用 synchronized来实现线程安全的，给整个哈希表加
 > 多线程下安全的操作 map还有其他方法吗？
 
 可以使用`Collections.synchronizedMap`方法，对方法进行加同步锁,本质也是对 HashMap 进行全表锁,在竞争激烈的多线程环境下性能依然也非常差.。
+
+
+
+## 3、说一下ArrayList
+
+
+
+
+
+## 4、说一下反射
+
+
+
+
+
+## 5、说一下垃圾回收机制
+
+
+

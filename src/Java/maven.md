@@ -37,3 +37,4 @@ maven test：对项目进行运行测试
 maven packet：打包文件并存放到项目的target目录下，打包好的文件通常都是编译后的class文件
 
 maven install：在本地仓库生成仓库的安装包，可供其他项目引用，同时打包后的文件放到项目的target目录下
+
