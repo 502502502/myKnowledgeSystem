@@ -460,8 +460,8 @@ docker run -d \
 --restart=always \
 -p 9092:9092 \
 -e KAFKA_BROKER_ID=0 \
--e KAFKA_ZOOKEEPER_CONNECT=192.168.176.100:2181 \
--e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.176.100:9092 \
+-e KAFKA_ZOOKEEPER_CONNECT=192.168.17.100:2181 \
+-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.17.100:9092 \
 -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 \
 -e TZ="Asia/Shanghai" \
 wurstmeister/kafka:latest
@@ -472,7 +472,7 @@ docker run -d \
 --restart=always \
 --name kfk-manager \
 -p 9000:9000 \
--e ZK_HOSTS=192.168.176.100:2181 \
+-e ZK_HOSTS=192.168.17.100:2181 \
 sheepkiller/kafka-manager:latest
 #访问ip:9000
 ```
