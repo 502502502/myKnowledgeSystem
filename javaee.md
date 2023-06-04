@@ -26,3 +26,11 @@ comment
 + con_id
 + content
 
+
+
+artemis create D:\JAVA\activemq\apache-artemis-2.10.0\bin\myartemis
+
+
+
+artemis run
+
