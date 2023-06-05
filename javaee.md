@@ -64,3 +64,32 @@ artemis create D:\JAVA\activemq\apache-artemis-2.10.0\bin\myartemis
 
 
 
+```
+我这段代码能实现依赖注入吗
+@Startup
+@Singleton
+public class Config {
+   @Provides
+   public UserDao provideUserDao() {
+      return new UserDao();
+   }
+   @Provides
+   public SessionDao provideSessionDao() {
+      return new SessionDao();
+   }
+   @Provides
+   public MessageDao provideMessageDao() {
+      return new MessageDao();
+   }
+}
+
+public class MyTest {
+	@Inject
+	private UserDao userDao;
+	@Test
+	public void  testJPA(){
+		System.out.println(userDao.findById(1));
+	}
+}
+```
+
