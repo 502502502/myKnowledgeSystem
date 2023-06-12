@@ -326,14 +326,13 @@ conda activate work
 #启动集群
 $SPARK_HOME/sbin/start-all.sh
 start-dfs.sh
+#打开hadoop-web
+namenode:9870
 #清除hdfs文件
 hdfs dfs -rm /work/apple_stock_prices.png
 hdfs dfs -rm /work/linear_regression_result.txt
 hdfs dfs -rm /work/positive_correlation.csv
 hdfs dfs -rm /work/negative_correlation.csv
-
-#打开hadoop-web
-namenode:9870
 #打开jupyter
 jupyter notebook
 anaconda/work/**.ipynb
@@ -350,4 +349,26 @@ data/work/out/*
 stop-dfs.sh
 $SPARK_HOME/sbin/stop-all.sh
 ```
+
+
+
+#### 五、部署难点
+
+
+
+###### 1、虚拟环境搭建，依赖冲突
+
+使用Anaconda搭建机器学习环境，使用conda安装Hadoop相关依赖报错，更换镜像源以及更新conda等方式均不起作用，最后使用pip安装依赖后，创建jupeter基于当前环境的运行核心之后才正确找到模块依赖。
+
+###### 2、hadoop集群提交失败
+
+原先计划使用hadoop自带的MapReduce分布式计算提交程序，遇到JavaIOException，原因未知，解决不了，之后改用部署方案，安装spark集群，使用spark分布式计算执行程序，将代码使用pyspark模块进行改写。
+
+###### 3、客户端连接操作HDFS
+
+使用hdfs客户端API连接HDFS，存取文件发生错误，检查后发现是权限问题，在core-site.xml配置关闭web权限控制解决问题。
+
+###### 4、系统资源不足
+
+虚拟环境需要的资源大，系统硬盘不足，环境安装失败，通过调整集群架构，改成两个结点的集群进行Hadoop和spark集群部署。由于工作结点数量少，程序执行缓慢，重新配置虚拟机，分配更多的CPU核心提高计算能力。
 
