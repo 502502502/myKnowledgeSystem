@@ -314,6 +314,25 @@ hadoop fs -get /work/negative_correlation.csv /home/hadoop/data/work/out/negativ
 #关闭集群
 stop-dfs.sh
 $SPARK_HOME/sbin/stop-all.sh
+
+
+
+#打开jupyter
+jupyter notebook
+anaconda/work/**.ipynb
+#提交程序
+hdfs dfsadmin -safemode get
+hdfs dfsadmin -safemode leave
+#从hdfs下载文件
+hadoop fs -get /work/apple_stock_prices.png /home/hadoop/data/work/out/apple_stock_prices.png
+hadoop fs -get /work/linear_regression_result.txt /home/hadoop/data/work/out/inear_regression_result.txt
+hadoop fs -get /work/positive_correlation.csv /home/hadoop/data/work/out/positive_correlation.csv
+hadoop fs -get /work/negative_correlation.csv /home/hadoop/data/work/out/negative_correlation.csv
+#关闭集群
+stop-dfs.sh
+$SPARK_HOME/sbin/stop-all.sh
+#查看
+data/work/out/*
 ```
 
 
@@ -328,26 +347,8 @@ $SPARK_HOME/sbin/start-all.sh
 start-dfs.sh
 #打开hadoop-web
 namenode:9870
-#清除hdfs文件
-hdfs dfs -rm /work/apple_stock_prices.png
-hdfs dfs -rm /work/linear_regression_result.txt
-hdfs dfs -rm /work/positive_correlation.csv
-hdfs dfs -rm /work/negative_correlation.csv
 #打开jupyter
 jupyter notebook
-anaconda/work/**.ipynb
-#运行程序
-5min
-#从hdfs下载文件
-hadoop fs -get /work/apple_stock_prices.png /home/hadoop/data/work/out/apple_stock_prices.png
-hadoop fs -get /work/linear_regression_result.txt /home/hadoop/data/work/out/inear_regression_result.txt
-hadoop fs -get /work/positive_correlation.csv /home/hadoop/data/work/out/positive_correlation.csv
-hadoop fs -get /work/negative_correlation.csv /home/hadoop/data/work/out/negative_correlation.csv
-#查看
-data/work/out/*
-#关闭集群
-stop-dfs.sh
-$SPARK_HOME/sbin/stop-all.sh
 ```
 
 
