@@ -251,6 +251,18 @@ output_stream.close()
 
 #### 三、Hadoop部署
 
+
+
+主要环境配置
+
+|  名称  | 版本  |             部署策略             |
+| :----: | :---: | :------------------------------: |
+| Hadoop | 3.2.0 | 1个namenode结点，2个datanode结点 |
+| Spark  | 3.1.2 |            2个worker             |
+| python | 3.10  |     Anazonda安装机器学习环境     |
+
+
+
 ###### 1、数据集上传hdfs
 
 ```shell
