@@ -81,7 +81,7 @@ cd /root
 
 
 
-**安装JRE**
+**安装jdk**
 
 ```shell
 #安装jdk
@@ -151,7 +151,7 @@ yum-config-manager \
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
 #安装docker引擎
- sudo yum install docker-ce docker-ce-cli containerd.io
+sudo yum install docker-ce docker-ce-cli containerd.io
 #启动
 sudo systemctl start docker
 #测试
