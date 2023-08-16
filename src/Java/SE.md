@@ -1096,7 +1096,7 @@ Java注解有三种类型：标准注解（Java SE提供的注解）、元注解
 
 例如：
 
-```
+```java
 javaCopy code@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MyAnnotation {
