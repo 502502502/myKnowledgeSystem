@@ -45,7 +45,7 @@
 
 **技术要点**：
 
-1、**Cookie、Session保存会话状态**，保持登录；Threadlocal做
+1、**Cookie、Session保存会话状态**，保持登录；Threadlocal缓存单次请求数据
 
 2、**Kafka做消息队列**，异步处理；**Elasticsearch做搜索引擎**，高效率分词检索关键词；
 
@@ -53,7 +53,7 @@
 
 4、**线程池并发处理查询请求**，迅速组装响应信息；
 
-5、抽离**变化频繁的数据放Redis**，稳定数据建立Redis缓存和Caffeine本地缓存，降低数据库压力；
+5、抽离**变化频繁的数据放Redis**，**Redis缓存和Caffeine本地缓存**放稳定数据，降低数据库压力；
 
 6、**Spring事务和Redis事务**保证操作一致；调整**JVM参数**，优化程序运行；Docker部署服务
 
